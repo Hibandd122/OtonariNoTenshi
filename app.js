@@ -2695,16 +2695,21 @@
       $('homeHeroVolTag').textContent = volData.id === 'vol10' ? 'TẬP 10' : 'TẬP 9';
     }
     if ($('homeHeroChapterTag') && chap) {
-      $('homeHeroChapterTag').textContent = chap.title || `Chương ${state.chapterIndex + 1}`;
+      $('homeHeroChapterTag').textContent = `CHƯƠNG ${state.chapterIndex + 1}`;
     }
     if ($('homeHeroTitle') && chap) {
       $('homeHeroTitle').textContent = chap.title;
     }
     if ($('homeHeroSnippet')) {
-      const activeP = $(`para-${state.paragraphIndex}`);
-      const text = activeP?.textContent?.replace(/🔖/g, '').trim();
+      let activeP = $(`para-${state.paragraphIndex}`);
+      let text = activeP?.textContent?.replace(/🔖/g, '').trim();
+      if (!text || text.toLocaleLowerCase() === chap?.title?.toLocaleLowerCase()) {
+        activeP = $(`para-${state.paragraphIndex + 1}`);
+        text = activeP?.textContent?.replace(/🔖/g, '').trim();
+      }
       if (text) {
-        $('homeHeroSnippet').textContent = text.slice(0, 160) + (text.length > 160 ? '…' : '');
+        const excerpt = text.length > 160 ? `${text.slice(0, 160).replace(/\s+\S*$/, '')}…` : text;
+        $('homeHeroSnippet').textContent = excerpt;
       }
     }
     if ($('homeHeroProgressTag')) {
