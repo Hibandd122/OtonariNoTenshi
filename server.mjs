@@ -3,11 +3,11 @@ import { readFile, stat } from 'node:fs/promises';
 import { extname, resolve } from 'node:path';
 import WebSocket from 'ws';
 import crypto from 'node:crypto';
+import { EDGE_TTS_TOKEN, EDGE_TTS_VERSION, generateMuid, generateSecMsGecV2 } from './js/edge-tts-security.js';
 
 const root = resolve('D:/Extension/Vol9_WebReader');
 const PORT = 8765;
 const HOST = '127.0.0.1';
-const TRUSTED_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -91,7 +91,7 @@ async function getAvailableVoices() {
   if (cachedVoices) return cachedVoices;
   try {
     const response = await fetch(
-      `https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list?trustedclienttoken=${TRUSTED_TOKEN}`,
+      `https://speech.platform.bing.com/consumer/speech/synthesize/readaloud/voices/list?trustedclienttoken=${EDGE_TTS_TOKEN}`,
       { signal: AbortSignal.timeout(5000) }
     );
     if (response.ok) {
@@ -108,14 +108,6 @@ async function getAvailableVoices() {
   return FALLBACK_VOICES;
 }
 
-function generateSecMsGec() {
-  const ticks = Math.floor(Date.now() / 1000) + 11644473600;
-  const rounded = ticks - (ticks % 300);
-  const windowsTicks = BigInt(rounded) * 10000000n;
-  const data = Buffer.from(`${windowsTicks.toString()}${TRUSTED_TOKEN}`, 'utf-8');
-  return crypto.createHash('sha256').update(data).digest('hex').toUpperCase();
-}
-
 function synthesizeEdgeTTS(text, voice = 'vi-VN-HoaiMyNeural', rate = '+0%', pitch = '+0Hz') {
   return new Promise((resolveTTS, rejectTTS) => {
     const cleaned = cleanTextForTTS(text);
@@ -125,13 +117,14 @@ function synthesizeEdgeTTS(text, voice = 'vi-VN-HoaiMyNeural', rate = '+0%', pit
 
     const reqId = crypto.randomUUID().replace(/-/g, '');
     const connId = crypto.randomUUID().replace(/-/g, '');
-    const hash = generateSecMsGec();
-    const url = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${TRUSTED_TOKEN}&Sec-MS-GEC=${hash}&Sec-MS-GEC-Version=1-143.0.3650.96&ConnectionId=${connId}`;
+    const hash = generateSecMsGecV2();
+    const url = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${EDGE_TTS_TOKEN}&Sec-MS-GEC=${hash}&Sec-MS-GEC-Version=2-${EDGE_TTS_VERSION}&ConnectionId=${connId}`;
 
     const ws = new WebSocket(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
         'Origin': 'chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold',
+        'Cookie': `muid=${generateMuid()};`,
         'Pragma': 'no-cache',
         'Cache-Control': 'no-cache'
       }

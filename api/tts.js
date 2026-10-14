@@ -1,7 +1,6 @@
 import WebSocket from 'ws';
 import crypto from 'node:crypto';
-
-const TRUSTED_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+import { EDGE_TTS_TOKEN, EDGE_TTS_VERSION, generateMuid, generateSecMsGecV2 } from '../js/edge-tts-security.js';
 const audioCache = new Map();
 const pendingAudioCache = new Map();
 const MAX_CACHE_ITEMS = 200;
@@ -44,14 +43,6 @@ export function isSpeakableText(text) {
   return /[\p{L}\p{N}]/u.test(cleaned);
 }
 
-function generateSecMsGec() {
-  const ticks = Math.floor(Date.now() / 1000) + 11644473600;
-  const rounded = ticks - (ticks % 300);
-  const windowsTicks = BigInt(rounded) * 10000000n;
-  const data = Buffer.from(`${windowsTicks.toString()}${TRUSTED_TOKEN}`, 'utf-8');
-  return crypto.createHash('sha256').update(data).digest('hex').toUpperCase();
-}
-
 export function sanitizeEdgeVoice(rawVoice) {
   const voiceText = String(rawVoice || '');
   if (/NamMinh|Nam Minh|Male|Nam/i.test(voiceText)) return 'vi-VN-NamMinhNeural';
@@ -89,13 +80,14 @@ export function synthesizeEdgeTTS(text, voice = 'vi-VN-HoaiMyNeural', rate = '+0
 
     const reqId = crypto.randomUUID().replace(/-/g, '');
     const connId = crypto.randomUUID().replace(/-/g, '');
-    const hash = generateSecMsGec();
-    const url = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${TRUSTED_TOKEN}&Sec-MS-GEC=${hash}&Sec-MS-GEC-Version=1-143.0.3650.96&ConnectionId=${connId}`;
+    const hash = generateSecMsGecV2();
+    const url = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${EDGE_TTS_TOKEN}&Sec-MS-GEC=${hash}&Sec-MS-GEC-Version=2-${EDGE_TTS_VERSION}&ConnectionId=${connId}`;
 
     const ws = new WebSocket(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
         'Origin': 'chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold',
+        'Cookie': `muid=${generateMuid()};`,
         'Pragma': 'no-cache',
         'Cache-Control': 'no-cache'
       }
