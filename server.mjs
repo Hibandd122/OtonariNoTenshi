@@ -34,6 +34,7 @@ const NO_CACHE_EXTENSIONS = new Set(['.html', '.js', '.mjs', '.css', '.webmanife
 const audioCache = new Map();
 const pendingAudioCache = new Map();
 const MAX_CACHE_ITEMS = 200;
+const recentIssueReports = new Map();
 
 // Valid silent MP3 frame (~26ms MPEG-1 Layer 3)
 const SILENT_MP3 = Buffer.from([
@@ -229,6 +230,66 @@ const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = decodeURIComponent(url.pathname);
+
+    if (pathname === '/api/report') {
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      if (req.method !== 'POST') {
+        res.writeHead(405, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+      if (!process.env.DISCORD_WEBHOOK_URL) {
+        res.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Report delivery is not configured' }));
+        return;
+      }
+      let rawBody = '';
+      for await (const chunk of req) {
+        rawBody += chunk;
+        if (rawBody.length > 12_000) {
+          res.writeHead(413, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({ error: 'Report is too large' }));
+          return;
+        }
+      }
+      const report = JSON.parse(rawBody || '{}');
+      const clean = (value, max = 1000) => String(value ?? '').replace(/[<>]/g, '').trim().slice(0, max);
+      const excerpt = clean(report.text, 700);
+      const issue = clean(report.reason, 500);
+      if (!excerpt || !issue) {
+        res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Missing report details' }));
+        return;
+      }
+      const client = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').slice(0, 80);
+      const now = Date.now();
+      for (const [key, timestamp] of recentIssueReports) if (now - timestamp > 60_000) recentIssueReports.delete(key);
+      if (recentIssueReports.has(client)) {
+        res.writeHead(429, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Please wait before sending another report' }));
+        return;
+      }
+      recentIssueReports.set(client, now);
+      const field = (name, value) => ({ name, value: clean(value, 500) || 'Không rõ' });
+      const payload = { embeds: [{ title: 'Báo lỗi nội dung', color: 0xe0a84f, timestamp: new Date().toISOString(), fields: [
+        field('Tập / chương / đoạn', `${report.volume} · ${report.chapter} · đoạn ${report.paragraph}`),
+        field('Mô tả lỗi', issue), field('Nội dung đoạn', excerpt), field('Trang', report.page)
+      ] }] };
+      try {
+        const discordRes = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: AbortSignal.timeout(8000)
+        });
+        if (!discordRes.ok) throw new Error(`Discord returned ${discordRes.status}`);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (error) {
+        recentIssueReports.delete(client);
+        console.error('Discord report delivery failed:', error.message);
+        res.writeHead(502, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({ error: 'Could not deliver report' }));
+      }
+      return;
+    }
 
     // Endpoint: /api/status
     if (pathname === '/api/status') {

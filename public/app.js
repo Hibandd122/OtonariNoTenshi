@@ -798,6 +798,18 @@
           }
           
           p.appendChild(bBtn);
+
+          const reportBtn = document.createElement('button');
+          reportBtn.className = 'para-report-btn';
+          reportBtn.type = 'button';
+          reportBtn.textContent = '⚑';
+          reportBtn.title = 'Báo lỗi đoạn này';
+          reportBtn.setAttribute('aria-label', `Báo lỗi đoạn ${pIdx + 1}`);
+          reportBtn.onclick = (e) => {
+            e.stopPropagation();
+            reportParagraphIssue(p, pIdx, reportBtn);
+          };
+          p.appendChild(reportBtn);
         }
         p.onclick = () => playParagraph(Number(p.dataset.index));
         
@@ -1491,6 +1503,36 @@
 
   function isParagraphBookmarked(volId, chapIdx, pIdx) {
     return state.bookmarks.some(b => b.volId === volId && b.chapIdx === chapIdx && b.pIdx === pIdx);
+  }
+
+  async function reportParagraphIssue(paragraph, paragraphIndex, button) {
+    const reason = window.prompt('Mô tả lỗi trong đoạn này:');
+    if (!reason?.trim()) return;
+
+    const volumeData = getActiveVolumeData();
+    const chapter = (volumeData.chapters || [])[state.chapterIndex];
+    const volumeTitle = volumeData.title || state.volumeId;
+    button.disabled = true;
+    try {
+      const response = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          volume: volumeTitle,
+          chapter: chapter?.title || `Chương ${state.chapterIndex + 1}`,
+          paragraph: paragraphIndex + 1,
+          text: paragraph.dataset.ttsText || paragraph.textContent,
+          reason: reason.trim(),
+          page: location.href
+        })
+      });
+      if (!response.ok) throw new Error('Không gửi được báo cáo');
+      showToast('Đã gửi báo lỗi. Cảm ơn bạn!');
+    } catch (error) {
+      showToast('Chưa gửi được báo lỗi. Thử lại sau nhé.');
+    } finally {
+      button.disabled = false;
+    }
   }
 
   function renderBookmarksList() {

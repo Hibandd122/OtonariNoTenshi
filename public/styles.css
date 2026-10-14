@@ -1468,6 +1468,39 @@ kbd {
 .book-content p:hover .para-bookmark-btn {
   opacity: 1;
 }
+.para-report-btn {
+  position: absolute;
+  right: 42px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+.book-content p:hover .para-report-btn,
+.para-report-btn:focus-visible {
+  opacity: 1;
+}
+.para-report-btn:hover:not(:disabled) {
+  color: var(--accent-primary);
+}
+.para-report-btn:disabled {
+  cursor: wait;
+  opacity: .6;
+}
+@media (hover: none) {
+  .para-report-btn {
+    opacity: .55;
+  }
+}
 .para-bookmark-btn.bookmarked {
   opacity: 1;
   color: var(--accent-primary);
