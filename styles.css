@@ -5486,6 +5486,73 @@ body.theme-deep-night {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
 
+/* 10. SIMPLIFIED CONTROLS · keep secondary actions in their existing panels */
+.topbar-actions > #quickSearchBtn,
+.topbar-actions > #sleepTimerBtn,
+.topbar-actions > #bookmarksBtn,
+.topbar-actions > .theme-dropdown-wrap,
+#railNavToc,
+#railNavBookmarks,
+#railNavSettings,
+#playerSeekBackBtn,
+#playerSeekFwdBtn,
+#playerStopBtn,
+.player-quick-badges {
+  display: none !important;
+}
+
+.quick-chapter-bar {
+  display: none !important;
+}
+
+.topbar-btn,
+.icon-btn {
+  min-height: 34px;
+  height: 34px;
+}
+
+.icon-btn {
+  width: 34px;
+}
+
+.btn {
+  min-height: 36px;
+  padding: 8px 13px;
+  border-radius: 11px;
+  font-size: 13px;
+}
+
+.btn-lg {
+  min-height: 38px;
+  padding: 8px 14px;
+}
+
+.mode-chip {
+  min-height: 32px;
+  padding: 4px 9px;
+  border-radius: 9px;
+  font-size: 11px;
+}
+
+.quick-typography-controls { min-height: 34px; }
+.quick-type-btn { padding: 3px 5px; }
+
+.controls-row { gap: 8px; }
+.ctrl-btn-step { width: 38px; height: 38px; }
+.play-main-btn { width: 48px; height: 48px; }
+
+@media (max-width: 560px) {
+  .topbar-actions .topbar-btn,
+  .topbar-actions .icon-btn {
+    min-width: 36px;
+    min-height: 38px;
+    height: 38px;
+  }
+
+  .topbar-actions .icon-btn { width: 36px; }
+  .hero-actions .btn { min-height: 36px; }
+}
+
 /* Dynamic Equalizer Bar Animations */
 @keyframes eqBarPulse1 { 0%, 100% { height: 4px; } 50% { height: 16px; } }
 @keyframes eqBarPulse2 { 0%, 100% { height: 16px; } 50% { height: 6px; } }

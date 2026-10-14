@@ -427,7 +427,7 @@
     autoPreloadNext: savedSettings.autoPreloadNext !== false,
     dropCap: savedSettings.dropCap !== false,
     isZenMode: false,
-    isSidebarOpen: window.innerWidth > 900,
+    isSidebarOpen: false,
 
     // Bookmarks & Timer
     bookmarks: Array.isArray(savedBookmarks) ? savedBookmarks : [],
@@ -2980,6 +2980,9 @@
 
 
   async function initApp() {
+    if (window.innerWidth > 900 && !state.isSidebarOpen) {
+      $('sidebar')?.classList.add('collapsed');
+    }
     updateDynamicLayoutMeasurements();
     applyTheme(state.theme);
     applyTypography();
