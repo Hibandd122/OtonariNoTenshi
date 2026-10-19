@@ -4991,15 +4991,12 @@ body.theme-deep-night {
 }
 
 .reader-mode-bar {
-  position: sticky;
-  top: 0;
-  z-index: 12;
-  margin: -8px -12px 0;
-  padding: 8px 12px 14px;
-  background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom-color: var(--border-subtle);
+  position: static;
+  z-index: 1;
+  margin: 0 0 12px 0;
+  padding: 8px 0 14px;
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .mode-chip, .quick-typography-controls {
@@ -5085,8 +5082,9 @@ body.theme-deep-night {
   }
   .reader-container { gap: 16px; }
   .reader-mode-bar {
-    margin: -2px -4px 0;
-    padding: 6px 4px 10px;
+    position: static;
+    margin: 0 0 10px 0;
+    padding: 6px 0 10px;
   }
   .chapter-hero {
     gap: 13px;
