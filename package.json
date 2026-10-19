@@ -1,7 +1,12 @@
 {
-  "name": "viet-docx-tts-reader",
+  "name": "otonarinotenshi",
   "version": "2.0.0",
   "description": "Trình đọc truyện DOCX tiếng Việt cao cấp tích hợp Microsoft Edge Neural AI Voice, Web Speech, Bookmark và PWA",
+  "homepage": "https://otonarinotenshi.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hibandd122/OtonariNoTenshi.git"
+  },
   "type": "module",
   "scripts": {
     "start": "node server.mjs",

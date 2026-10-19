@@ -1366,6 +1366,11 @@ kbd {
   transition: background-color var(--transition-fast);
   cursor: pointer;
 }
+@media (max-width: 768px), (hover: none) {
+  .book-content p {
+    padding-right: 76px;
+  }
+}
 .book-content p:hover {
   background: rgba(255, 255, 255, 0.03);
 }

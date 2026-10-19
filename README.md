@@ -1,6 +1,9 @@
-# 📖 Việt DOCX TTS Reader Pro
+# 📖 Thiên Sứ Nhà Bên · Web Reader & Audio TTS Pro
 
-> Trình đọc tiểu thuyết / tài liệu DOCX tiếng Việt cao cấp, tích hợp giọng đọc AI **Microsoft Edge Neural** chuẩn studio, đa dạng giao diện, bộ đệm audio tải trước mượt mà, hỗ trợ đánh dấu trang (Bookmarks), chế độ tập trung (Zen Mode) và PWA Offline.
+> Trình đọc Light Novel tiếng Việt cao cấp, tích hợp giọng đọc AI **Microsoft Edge Neural** chuẩn studio, đa dạng giao diện, bộ đệm audio tải trước mượt mà, hỗ trợ đánh dấu trang (Bookmarks), chế độ tập trung (Zen Mode) và PWA Offline.
+>
+> 🌐 **Trải nghiệm trực tiếp:** [https://otonarinotenshi.vercel.app](https://otonarinotenshi.vercel.app)
+> 📦 **GitHub Repository:** [Hibandd122/OtonariNoTenshi](https://github.com/Hibandd122/OtonariNoTenshi)
 
 ---
 
